@@ -4,7 +4,11 @@ import java.util.UUID;
 
 public class User {
 
-    private final UUID userUid;
+    public void setUserUid(UUID userUid) {
+        this.userUid = userUid;
+    }
+
+    private UUID userUid;
     private final String firstName;
     private final String lastName;
     private final Gender gender;

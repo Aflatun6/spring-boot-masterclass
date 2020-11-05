@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -46,13 +47,45 @@ class UserServiceTest {
         // Given means, that we expect from dao  our above created users. so  we check only service's functionality
         given(userDao.selectAllUsers()).willReturn(users);
 
-        List<User> allUsers = userService.getAllUsers();
+        List<User> allUsers = userService.getAllUsers(Optional.empty());
 
         assertThat(allUsers).hasSize(1);
 
         User user = allUsers.get(0);
         assertUserFields(user);
 
+    }
+
+    @Test
+    void shouldGetFilteredUsers() {
+
+        UUID annaUid = UUID.randomUUID();
+        User anna = new User(annaUid, "Anna", "Smith", User.Gender.FEMALE, 25, "annasmith@gmail.com");
+
+        UUID joeUid = UUID.randomUUID();
+        User joe = new User(joeUid, "Joe", "Jones", User.Gender.MALE, 30, "joeisamane@gmail.com");
+        List<User> users = new ArrayList<>() {{
+            add(anna);
+            add(joe);
+        }};
+
+
+        given(userDao.selectAllUsers()).willReturn(users);
+        assertThat(users).hasSize(2);
+
+        List<User> filteredUsers = userService.getAllUsers(Optional.of("female"));
+        assertThat(filteredUsers).hasSize(1);
+
+        User user = filteredUsers.get(0);
+        assertUserFields(user);
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenGenderIsInvalid() {
+        assertThatThrownBy(() -> userService.getAllUsers(Optional.of("fjklafkl;a")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Invalid gender");
     }
 
     @Test
